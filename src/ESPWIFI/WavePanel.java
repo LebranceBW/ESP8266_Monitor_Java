@@ -3,12 +3,10 @@ package ESPWIFI;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import javax.swing.JPanel;
-import javax.swing.text.html.HTMLDocument.Iterator;
 
 public class WavePanel extends JPanel
 {

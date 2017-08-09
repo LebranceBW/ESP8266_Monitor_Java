@@ -8,13 +8,15 @@ import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
 public class mainPanel extends JFrame
@@ -23,56 +25,30 @@ public class mainPanel extends JFrame
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static final int Port = 2333;
 	
-	private JButton newSocket_btn = new JButton("Open The Server");
-	private JLabel status_Lab = new JLabel("Please Open The Server");
-	private JPanel NorPanel = new JPanel();
+	public JButton newSocket_btn = new JButton("Connect");
+	public JLabel ipLabel = new JLabel("IP:");
+	public JTextArea ipText = new JTextArea("127.0.0.1");
+	public JLabel portLabel = new JLabel("Port:");
+	public JTextArea portText = new JTextArea("233");
+	
+	public JLabel status_Lab = new JLabel("Please Connect To The Server");
+	public JPanel NorPanel = new JPanel();
 	private WavePanel FramePanel = new WavePanel();
 	private boolean isServerRunning = false;
-	private Socket mySocket = new Socket();
-	private ServerSocket serverSocket;
+	private Socket mySocket;
+
 	private JLabel CharReceived = new JLabel();
 	public static void main(String[] args)
 	{
 		mainPanel ms = new mainPanel();
 		ms.setVisible(true);
-		ms.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	Thread serverThread = new Thread()
 	{
 		
-		@Override
-		public void run()
-		{
-			boolean f = beginSocket();// TODO Auto-generated method stub
-			newSocket_btn.setEnabled(true);
-			if(f == false)	
-			{
-				status_Lab.setText("Server Fault");
-				newSocket_btn.setText(new String("Open The Server"));
-			}
-			else
-			{		
-				newSocket_btn.setText("Close The Socket");
-				status_Lab.setText("Connect Successed！" + mySocket.getRemoteSocketAddress());
-			}
-			BufferedReader is;
-			
-			try
-			{
-				is = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
-				while(true)
-				{
-					int temp = is.read();
-					FramePanel.enterQ(temp);
-				}
-			} catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		
 	};
 	
 	public mainPanel()
@@ -83,7 +59,11 @@ public class mainPanel extends JFrame
 		setTitle("幅频特性曲线显示");
 		getContentPane().setLayout(new BorderLayout(10,10));
 		getContentPane().add(NorPanel,BorderLayout.NORTH);
-		NorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,60,30));
+		NorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,5,30));
+		NorPanel.add(ipLabel);
+		NorPanel.add(ipText);
+		NorPanel.add(portLabel);
+		NorPanel.add(portText);
 		NorPanel.add(newSocket_btn);
 		NorPanel.add(status_Lab);
 		NorPanel.add(CharReceived);
@@ -120,49 +100,38 @@ public class mainPanel extends JFrame
 				
 			}
 			
+			@SuppressWarnings("deprecation")
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
 				if(false == isServerRunning)
 				{
-					newSocket_btn.setText("Waitting for connect");
 					newSocket_btn.setEnabled(false);
-					status_Lab.setText("Waitting for connect,Port 2333");
+					status_Lab.setText("On Connecting,addr:" + ipText.getText()+":"+portText.getText());
 					isServerRunning = !isServerRunning;
+					serverThread = new socketThread();
 					serverThread.start();
 				}
 				else
 				{
+					serverThread.stop();
 					try
 					{
 						mySocket.close();
-						serverSocket.close();
 					} catch (IOException e1)
 					{
 						e1.printStackTrace();
 					}
-					newSocket_btn.setText(new String("Open The Server"));
+					newSocket_btn.setText(new String("Connect"));
 					isServerRunning = !isServerRunning;
-					status_Lab.setText("Server Closed");
+					status_Lab.setText("Connection closed");
 					
 				}
 			}
 		});
 	}
 	
-	public boolean beginSocket()
-	{
-		try
-		{
-			serverSocket = new ServerSocket(Port);
-			
-			mySocket=serverSocket.accept();
-			return true;
-		}
-		catch (Exception e) {
-			return false;
-		}
-	}
+
 	
 	public static void setUIFont (javax.swing.plaf.FontUIResource f){
 	    //
@@ -179,4 +148,56 @@ public class mainPanel extends JFrame
 	        UIManager.put (key, f);
 	      }
 	    }
+	
+	
+	
+	
+	public class socketThread extends Thread
+	{
+
+		@Override
+		public void run()
+		{
+			boolean f = beginSocket();// TODO Auto-generated method stub
+			newSocket_btn.setEnabled(true);
+			if(f == false)	
+			{
+				status_Lab.setText("Connect Failed");
+				newSocket_btn.setText(new String("Reconnect"));
+			}
+			else
+			{		
+				newSocket_btn.setText("Close The Socket");
+				status_Lab.setText("Connect Successed！" + mySocket.getRemoteSocketAddress());
+			}
+			BufferedReader is;
+			
+			try
+			{
+				is = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
+				while(true)
+				{
+					int temp = is.read();
+					FramePanel.enterQ(temp);
+				}
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		public boolean beginSocket()
+		{
+			try
+			{
+				SocketAddress addr = new InetSocketAddress(ipText.getText(),Integer.valueOf(portText.getText()));
+				mySocket = new Socket();
+				mySocket.connect(addr,10);
+				return true;
+			}
+			catch (Exception e) {
+				return false;
+			}
+		}
+	}
+
 }
