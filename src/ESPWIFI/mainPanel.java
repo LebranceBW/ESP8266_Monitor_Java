@@ -28,10 +28,10 @@ public class mainPanel extends JFrame
 	
 	public JButton newSocket_btn = new JButton("Connect");
 	public JLabel ipLabel = new JLabel("IP:");
-	public JTextArea ipText = new JTextArea("127.0.0.1");
+	public JTextArea ipText = new JTextArea("127.0.0.1",1,10);
 	public JLabel portLabel = new JLabel("Port:");
-	public JTextArea portText = new JTextArea("233");
-	
+	public JTextArea portText = new JTextArea("233",1,7);
+	private JButton clear_btn = new JButton("clear");
 	public JLabel status_Lab = new JLabel("Please Connect To The Server");
 	public JPanel NorPanel = new JPanel();
 	private WavePanel FramePanel = new WavePanel();
@@ -45,26 +45,26 @@ public class mainPanel extends JFrame
 		ms.setVisible(true);
 	}
 	
-	Thread serverThread = new Thread()
-	{
-		
-		
-	};
+	Thread serverThread = null;
 	
 	public mainPanel()
 	{
 		super();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setUIFont (new javax.swing.plaf.FontUIResource("Serif",Font.ITALIC,12));
 		setSize(new Dimension(800, 500));		
 		setTitle("幅频特性曲线显示");
 		getContentPane().setLayout(new BorderLayout(10,10));
 		getContentPane().add(NorPanel,BorderLayout.NORTH);
 		NorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,5,30));
+		ipText.setSize(60,16);
+		portText.setSize(60,16);
 		NorPanel.add(ipLabel);
 		NorPanel.add(ipText);
 		NorPanel.add(portLabel);
 		NorPanel.add(portText);
 		NorPanel.add(newSocket_btn);
+		NorPanel.add(clear_btn);
 		NorPanel.add(status_Lab);
 		NorPanel.add(CharReceived);
 		getContentPane().add(FramePanel, BorderLayout.CENTER);
@@ -129,6 +129,44 @@ public class mainPanel extends JFrame
 				}
 			}
 		});
+	
+		clear_btn.addMouseListener(new MouseListener()
+		{
+			
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				FramePanel.clear();
+			}
+		});
 	}
 	
 
@@ -164,6 +202,7 @@ public class mainPanel extends JFrame
 			{
 				status_Lab.setText("Connect Failed");
 				newSocket_btn.setText(new String("Reconnect"));
+				isServerRunning = false;
 			}
 			else
 			{		
@@ -199,5 +238,17 @@ public class mainPanel extends JFrame
 			}
 		}
 	}
-
+	
+	protected void 	finalize()
+	{
+		try
+		{
+			mySocket.close();
+		} catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		serverThread.stop();
+	}
 }

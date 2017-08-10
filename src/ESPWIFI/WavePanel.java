@@ -11,8 +11,8 @@ import javax.swing.JPanel;
 public class WavePanel extends JPanel
 {
 	private static final long serialVersionUID = 1L;
-	private  int baseX = 10;
-	private  int baseY = 266;
+	private final int baseX = 10;
+	private int baseY = 266;
 	private final int xLength = 700;
 	private final int yLength = 256;
 	private Image iBuffer; 
@@ -21,16 +21,24 @@ public class WavePanel extends JPanel
 	public WavePanel()
 	{
 		super();
+
 	}
 	
+	public void clear()
+	{
+		Q.clear();
+		updateUI();
+	}
 	public void paint(Graphics g)
 	{
 		if (iBuffer == null) {
 			iBuffer = createImage(getWidth(), getHeight());
 			gBuffer=iBuffer.getGraphics(); 
         }
-		baseX = (int)	(0.1*getWidth());
+//		baseX = (int)	(0.1*getWidth());
 		baseY = (int) (0.9 * getHeight());
+		gBuffer.setColor(Color.WHITE);
+		gBuffer.fillRect(0, 0, getWidth(), getHeight());
 		gBuffer.setColor(Color.BLACK);
 		gBuffer.drawLine(baseX, baseY, baseX, baseY-yLength);
 		gBuffer.drawLine(baseX, baseY, baseX+xLength, baseY);
@@ -56,4 +64,5 @@ public class WavePanel extends JPanel
 	{
 		paint(g);
 	}
+
 }
